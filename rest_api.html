@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Post Game</title>
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            width: 150px;
+            height: 300px;
+            padding: 5px 20px 35px;
+            border: 1px solid grey;
+            border-radius: 15px;
+            margin: 10px;
+            justify-content: center;
+        }
+
+        #container {
+            display: inline-flex;
+            flex-flow: row wrap;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        img {
+            width: 145px;
+            text-align: center;
+            padding: 0;
+        }
+
+        strong {
+            color: brown;
+            font-size: 20px;
+        }
+
+        .card div {
+            font-size: 12px;
+            color: gray;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid grey;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            border: 1px solid gray;
+            border-radius: 8px;
+            background-color: rgb(149, 21, 223);
+            color: white;
+            width: 100px;
+        }
+
+        h1 {
+            text-align: start;
+        }
+
+        /* #gameForm{
+            display: flex;
+            justify-content: center;
+            align-content: center;
+        } */
+    </style>
+</head>
+
+<body>
+    <h1>Game Store With ASP.NET API</h1>
+    <form id="gameForm">
+        <input type="text" id="title" placeholder="Game Title" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <input type="number" id="price" placeholder="Price" required step="0.01" min="1.00" max="99.99">
+        <input type="file" id="fileInput" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="container"></div>
+
+    <script>
+        // let base_url = `https://l46pccp6-5036.asse.devtunnels.ms`;
+        let base_urlPost = `https://lm640mhq-7182.asse.devtunnels.ms`;
+        let base_url = `https://pisethpt.github.io/Game-Store-Vscode`;
+
+
+
+        async function getGames()
+        {
+            let url = `${base_url}/Game/data.json`;
+            try
+            {
+                const response = await fetch(url, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                });
+                const data = await response.json();
+
+                for (let content of data)
+                {
+                    let gameCard = `
+                    <div class="card">
+                        <img src="${base_url}${content.image}" alt="${content.image}">
+                        <br>
+                        <h3>${content.title}</h3>
+                        <p>${content.description}</p>
+                        <p><strong>$ ${content.price}<strong></p>
+                    </div> `;
+                    container.innerHTML += `<br> ${gameCard}`;
+                }
+            } catch (error)
+            {
+                throw new Error(`Error: ${error}`);
+            }
+        }
+
+
+
+        async function getGamesWithGithub()
+        {
+            let url = `https://pisethpt.github.io/Game-Store-Vscode/Game/data.json`;
+            try
+            {
+                const response = await fetch(url); // Use the correct URL variable
+                const data = await response.json();
+
+                // Clear previous content if necessary
+                container.innerHTML = '';
+                console.log(url);
+
+                // Assuming data is an array
+                for (let content of data)
+                {
+                    let trimmedImagePath = content.Image.replace(/^\/Resources\//, ''); // Removes /Resources/ from the start
+                    let imageUrl = `${base_url}/Game/wwwroot/Images/${trimmedImagePath}`;
+                    // console.log(imageUrl);
+                    // console.log(trimmedImagePath); // Outputs: 563abb3f-1cb9-4282-8b64-c661df820750.png
+                    let gameCard = `
+                <div class="card">
+                    <br>
+                    <img src="${imageUrl}" alt="${content.Title}"/>
+                    <h3>${content.Title}</h3>
+                    <div>${content.Description}</div>
+                    <div><strong>$ ${content.Price}</strong></div>
+                </div>`;
+                    container.innerHTML += `<br>${gameCard}`;
+                }
+            } catch (error)
+            {
+                console.error(`Error: ${error}`); // Log the error for debugging
+            }
+        }
+
+        getGamesWithGithub();
+
+
+        document.getElementById("gameForm").addEventListener("submit", function (event)
+        {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            const price = document.getElementById("price").value;
+            const fileInput = document.getElementById("fileInput");
+
+            formData.append("title", title);
+            formData.append("description", description);
+            formData.append("price", price);
+
+            if (fileInput.files.length > 0)
+            {
+                formData.append("image", fileInput.files[0]);
+            } else
+            {
+                console.error("No file selected");
+                return;
+            }
+
+            let url = `${base_urlPost}/Games/PostGame`;
+            fetch(url, {
+                method: "POST",
+                body: formData // No Content-Type header
+            }).then((response) =>
+            {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            }).then((data) =>
+            {
+                console.log(`Success: ${JSON.stringify(data)}`);
+
+                // document.getElementById("container").removeChild();
+                // getGames();
+
+            }).catch((error) =>
+            {
+                console.error(`Error: ${error}`);
+            });
+
+        });
+    </script>
+</body>
+
+</html>
